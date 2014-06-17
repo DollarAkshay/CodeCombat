@@ -1,121 +1,61 @@
 // Tharin is a melee fighter with shield, warcry, and terrify skills.
-
 // this.shield() lets him take one-third damage while defending.
-
 // this.warcry() gives allies within 10m 30% haste for 5s, every 10s.
-
 // this.terrify() sends foes within 30m fleeing for 5s, once per match.
-
-//Update 10:45
-
-
+//Update 12:03
 var friends = this.getFriends();
-
 var friend = this.getNearest(friends);
-
 var enemies = this.getEnemies();
-
 var enemy = this.getNearest(enemies);
-
 var enemyhero;
-
-var archers = new Array();
-
 var base,target=0,near=0,danger=0;
-
-
 for(var i=0;i<enemies.length;i++){
-
     if(enemies[i].id==='Ogre Base')
-
         base=enemies[i];
-
-    else if(enemies[i].type==='thrower')
-
-        archers.push(enemies[i]);
-
     else if(enemies[i].health>60)
-
         enemyhero=enemies[i];
-
     if(enemies[i].target==='Tharin')
-
         target++;
-
     if(this.distance(enemies[i])<=20)
-
         near++;
-
 }
 
-
-
-if(enemyhero.target && enemyhero.target.id==="Human Base"){
-
+if(enemyhero.target && (enemyhero.target.id==="Human Base" || 
+   enemyhero.target.id==="Tharin")){
     danger=1;
-
 }
 
-
+    
 if(this.pos.x<40)
-
     this.move({x: 42, y: 40});
-
 else if(base){
-
         this.attack(base);
-
         this.say("Attack ", {target: base});
-
 }
 
-
-
-if(!this.getCooldown('warcry') && this.now()>=0.5){
-
-    this.warcry();
-
-}
-
-if(danger && this.pos.x>enemyhero.pos.x && !this.getCooldown('terrify') ){
-
+if(danger && this.pos.x>10+enemyhero.pos.x && !this.getCooldown('terrify') ){
     this.terrify();
-
 }
-
-
+if(!this.getCooldown('warcry') && this.now()>=0.5){
+    this.warcry();
+}
 if((target>3 || near > 6 || this.health<125) && this.pos.x>65 && 
     !this.getCooldown('terrify')){
-
     this.terrify();
-
 }
     
 
-this.say("Attack ", {target: base});
-
-
 
 //Which one do you do at any given time? Only the last called action happens.
-
 //if(!this.getCooldown('warcry')) this.warcry();
-
-//if(!this.getCooldown('terrify')) this.terrify();
-
+//if(!th\is.getCooldown('terrify')) this.terrify();
 //this.shield();
 //this.attack(enemy);
 
-
 // You can also command your troops with this.say():
-
 //this.say("Defend!", {targetPos: {x: 30, y: 30}}));
-
 //this.say("Attack!", {target: enemy});
-
 //this.say("Move!", {targetPos: {x: 40, y: 40});
 
-
 // You can store state on this across frames:
-
 //this.lastHealth = this.health;
-
