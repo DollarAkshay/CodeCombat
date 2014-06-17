@@ -1,0 +1,49 @@
+// The Brawler is a huge melee hero with mighty mass.
+// this.throw() hurls an enemy behind him.
+// this.jumpTo() leaps to a target within 20m every 10s.
+// this.stomp() knocks everyone away, once per match.
+
+var friends = this.getFriends();
+var enemies = this.getEnemies();
+var enemy = this.getNearest(enemies);
+var friend = this.getNearest(friends);
+var enemyhero,base,archers=new Array(),archer;
+for(var i=0;i<enemies.length;i++){
+    if(enemies[i].id==="Tharin" || enemies[i].id==="Librarian")
+        enemyhero=enemies[i];
+    else if(enemies[i].id==="Human Base")
+        base=enemies[i];
+    else if(enemies[i].type==="archer")
+        archers.push(enemies[i]);
+}
+if(archers.length)
+    archer = this.getNearest(archers);
+var dir=180;
+if(enemyhero)
+dir = new Vector(enemyhero.pos.x-this.pos.x,enemyhero.pos.y-this.pos.y).heading()*180/Math.PI;
+
+if(enemy && enemy.health<=15 && this.distance(enemy)<=10){
+    this.attack(enemy);
+}
+else if(archers.length && this.distance(archer)<=13)
+    this.attack(archer);
+else if(this.target && this.distance(this.target)>14 && !this.getCooldown("jump"))
+    this.jumpTo(this.target);
+else if(enemyhero && dir>-60 && dir<60 && this.distance(enemyhero)<=6)
+    this.throw(enemyhero);
+else if(base)
+    this.attack(base);
+this.say("Attack ",{target : base});
+
+
+// Which one do you do at any given time? Only the last called action happens.
+
+//this.attack(enemy);
+//
+// You can also command your troops with this.say():
+//this.say("Defend!", {targetPos: {x: 60, y: 30}}));
+//this.say("Attack!", {target: enemy});
+//this.say("Move!", {targetPos: {x: 50, y: 40});
+
+// You can store state on this across frames:
+//this.lastHealth = this.health;
