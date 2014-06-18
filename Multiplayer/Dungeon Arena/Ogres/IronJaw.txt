@@ -35,7 +35,8 @@ else if(base)
     this.attack(base);
 this.say("Attack ",{target : base});
 
-
+if(this.health<50 && !this.getCooldown('stomp'))
+    this.stomp();
 // Which one do you do at any given time? Only the last called action happens.
 
 //this.attack(enemy);
