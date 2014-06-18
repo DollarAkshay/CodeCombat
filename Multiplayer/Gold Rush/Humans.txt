@@ -1,0 +1,32 @@
+// This code runs once per frame. Choose where to move to grab gold!
+// First player to 150 gold wins.
+
+// This is an example of grabbing the 0th coin from the items array.
+var items = this.getItems();
+var opp = this.getNearestEnemy();
+var px=this.pos.x,py=this.pos.y,ex=opp.pos.x,ey=opp.pos.y;
+var coin,dist;
+if(items[0]){
+    dist=9000;
+    for(var i=1; i<items.length; i++){
+        var ix=items[i].pos.x,iy=items[i].pos.y;
+        var pdist = this.distance(items[i]);
+        var odist = Math.sqrt((ex-ix)*(ex-ix)+(ey-iy)*(ey-iy));
+        if(pdist<dist && items[i].bountyGold>2 && pdist<odist){
+            coin=items[i];
+            dist=pdist;
+        }
+    }
+}
+if(coin)
+    this.move(coin.pos)
+else if(items[0])
+    this.move(items[0].pos);
+else
+    this.moveXY(60,45);
+if(opp.gold>100 && !this.getCooldown("terrify"))
+    this.terrify();
+
+
+// You can surely pick a better coin using the methods below.
+// Click on a coin to see its API.
