@@ -4,11 +4,14 @@
 // This is an example of grabbing the 0th coin from the items array.
 
 //Function to return coin vector from current position
-function coinVector(coin, player){
+function coinVector(coin, player,opp){
     var dist = player.distance(coin);
+    var snatch = Math.sqrt((opp.pos.x-coin.pos.x)*(opp.pos.x-coin.pos.x) + 
+                           (opp.pos.y-coin.pos.y)*(opp.pos.y-coin.pos.y));
+    var lost = snatch<dist?0.5:1;
     var vector = new Vector(coin.pos.x-player.pos.x,coin.pos.y-player.pos.y);
     vector = Vector.multiply(vector, 
-      Math.pow(coin.bountyGold,2) * 10000000/(Math.pow(dist,5)));
+      lost*Math.pow(coin.bountyGold,1) * 1000/(Math.pow(dist,3)));
     return vector;
 }
 
@@ -21,8 +24,9 @@ var sum = new Vector(0,0);
 //Resultant Vector
 if(coins[0]){
 for(var i=0; i<coins.length; i++)
-    sum = Vector.add(sum, coinVector(coins[i],this) );
-sum = Vector.multiply(Vector.normalize(sum),20);
+    sum = Vector.add(sum, coinVector(coins[i],this,opp) );
+    if(sum.magnitude()<10)
+sum = Vector.multiply(Vector.normalize(sum),10);
 }
 this.move({x: px+sum.x, y: py+sum.y});
 
