@@ -2,31 +2,43 @@
 // First player to 150 gold wins.
 
 // This is an example of grabbing the 0th coin from the items array.
-var items = this.getItems();
-var opp = this.getNearestEnemy();
-var px=this.pos.x,py=this.pos.y,ex=opp.pos.x,ey=opp.pos.y;
-var coin,dist;
-if(items[0]){
-    dist=9000;
-    for(var i=1; i<items.length; i++){
-        var ix=items[i].pos.x,iy=items[i].pos.y;
-        var pdist = this.distance(items[i]);
-        var odist = Math.sqrt((ex-ix)*(ex-ix)+(ey-iy)*(ey-iy));
-        if(pdist<dist && items[i].bountyGold>2 && pdist<odist){
-            coin=items[i];
-            dist=pdist;
-        }
-    }
+
+//Function to return coin vector from current position
+function coinVector(coin, player){
+    var dist = player.distance(coin);
+    var vector = new Vector(coin.pos.x-player.pos.x,coin.pos.y-player.pos.y);
+    vector = Vector.multiply(vector, 
+      Math.pow(coin.bountyGold,2) * 10000000/(Math.pow(dist,5)));
+    return vector;
 }
-if(coin)
-    this.move(coin.pos)
-else if(items[0])
-    this.move(items[0].pos);
-else
-    this.moveXY(60,45);
-if(opp.gold>100 && !this.getCooldown("terrify"))
+
+var coins = this.getItems();
+var opp = this.getNearestEnemy();
+var px=this.pos.x,py=this.pos.y;
+var ex=opp.pos.x,ey=opp.pos.y;
+var sum = new Vector(0,0);
+
+//Resultant Vector
+if(coins[0]){
+for(var i=0; i<coins.length; i++)
+    sum = Vector.add(sum, coinVector(coins[i],this) );
+sum = Vector.multiply(Vector.normalize(sum),20);
+}
+this.move({x: px+sum.x, y: py+sum.y});
+
+//Gets the new Coins generated
+if (typeof this.prevCoins === 'undefined'){
+	this.prevCoins=coins.slice(0);
+}
+var CurrentCoinsHash = {};
+this.prevCoins.forEach(function(obj){CurrentCoinsHash[obj.id]=obj;});
+var newCoins = coins.filter(function(obj){ return !(obj.id in CurrentCoinsHash);});
+
+if(newCoins.length>0)
+    this.prevCoins=coins.slice(0);
+    
+//Terrify is Opponent is winning
+if(opp.gold>100 && !this.getCooldown('terrify'))
     this.terrify();
 
 
-// You can surely pick a better coin using the methods below.
-// Click on a coin to see its API.
