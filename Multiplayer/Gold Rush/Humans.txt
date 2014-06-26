@@ -1,48 +1,114 @@
-// This code runs once per frame. Choose where to move to grab gold!
-// First player to 150 gold wins.
-
-// This is an example of grabbing the 0th coin from the items array.
-
-//Function to return coin vector from current position
-function coinVector(coin, player,opp){
-    var dist = player.distance(coin);
-    var snatch = Math.sqrt((opp.pos.x-coin.pos.x)*(opp.pos.x-coin.pos.x) + 
-                           (opp.pos.y-coin.pos.y)*(opp.pos.y-coin.pos.y));
-    var lost = snatch<dist?0.5:1;
-    var vector = new Vector(coin.pos.x-player.pos.x,coin.pos.y-player.pos.y);
-    vector = Vector.multiply(vector, 
-      lost*Math.pow(coin.bountyGold,1) * 1000/(Math.pow(dist,3)));
-    return vector;
-}
-
 var coins = this.getItems();
 var opp = this.getNearestEnemy();
-var px=this.pos.x,py=this.pos.y;
-var ex=opp.pos.x,ey=opp.pos.y;
-var sum = new Vector(0,0);
+var gem,gold,silver,big_bronze,small_bronze;
+var d6=9000,d5=9000,d4=9000,d3=9000,d2=9000,d1=9000;
 
-//Resultant Vector
-if(coins[0]){
-for(var i=0; i<coins.length; i++)
-    sum = Vector.add(sum, coinVector(coins[i],this,opp) );
-    if(sum.magnitude()<10)
-sum = Vector.multiply(Vector.normalize(sum),10);
-}
-this.move({x: px+sum.x, y: py+sum.y});
 
-//Gets the new Coins generated
-if (typeof this.prevCoins === 'undefined'){
-	this.prevCoins=coins.slice(0);
-}
-var CurrentCoinsHash = {};
-this.prevCoins.forEach(function(obj){CurrentCoinsHash[obj.id]=obj;});
-var newCoins = coins.filter(function(obj){ return !(obj.id in CurrentCoinsHash);});
-
-if(newCoins.length>0)
-    this.prevCoins=coins.slice(0);
+//Function to find nearest coin with specific bounty 
+function nearestCoin(bounty,player,opponent){
+    var near =9000;
+    var ex = opponent.pos.x,ey = opponent.pos.y;
     
-//Terrify is Opponent is winning
-if(opp.gold>100 && !this.getCooldown('terrify'))
+    var coin;
+    for(var i=0; i<coins.length; i++){
+        var dist = player.distance(coins[i]);
+        var snatch = Math.sqrt((ex-coins[i].pos.x)*(ex-coins[i].pos.x) +
+        (ey-coins[i].pos.y)*(ey-coins[i].pos.y));
+        if(dist<near && coins[i].bountyGold===bounty && snatch>dist){
+            coin = coins[i];
+            near = dist;
+        }
+    }
+    return coin;
+}
+
+//Function to taunt opponent
+function speak(player,opp){
+    var myGold = player.gold;
+    var opGold = opp.gold;
+    var dist = player.distance(opp);
+    var special = ["GG Bro","Guess who is winning ? :D",
+                   "Arrrghh !! I have to catch up","Hey you! Shoo !! Shoo Away !!",
+                   "Well played man :)"];
+    var msg = ["Hey look a bronze coin","Look over there","You wanna fight like a                  real man ?","Hey,you know there is a diamond in the forest"];
+    
+    
+    if(myGold>=150 && myGold>opGold)
+        player.say(special[0]);
+    else if(opGold>=150 && myGold<opGold)
+        player.say(special[4]);
+    else if(myGold>30+opGold && myGold>123)
+        player.say(special[1]);
+    else if(dist<20)
+        player.say(special[3]);
+    else if(player.now()%10===0){
+        var random = Math.round(Math.random()*100)%4;
+        player.say(msg[random]);
+    }
+    
+}
+
+if(coins.length){
+gem = nearestCoin(5,this,opp);
+if(gem)
+d5 = (this.distance(gem)-5)/5;
+
+gold = nearestCoin(4,this,opp);
+if(gold)
+d4 = (this.distance(gold)-5)/4;
+
+silver = nearestCoin(3,this,opp);
+if(silver)
+d3 = (this.distance(silver)-5)/3;
+
+big_bronze = nearestCoin(2,this,opp);
+if(big_bronze)
+d2 = (this.distance(big_bronze)-5)/2;
+
+small_bronze = nearestCoin(1,this,opp);
+if(small_bronze)
+d1 = (this.distance(small_bronze)-5)/1;
+
+}
+else 
+    d6=0;
+    
+if(this.gold===149){
+    d5*5;d4*4;d3*3;d2*2;
+}
+else if(this.gold===148){
+    d5*5/2;d4*2;d3*3/2;
+}
+else if(this.gold===147){
+    d5*5/3;d4*4/3;
+}
+else if(this.gold===146){
+    d5*5/4;
+}
+var min = Math.min(d6,d5,d4,d3,d2,d1);
+
+if(min===d5 && gem)
+this.move(gem.pos);
+else if(min===d4 && gold)
+this.move(gold.pos);
+else if(min===d3 && silver)
+this.move(silver.pos);
+else if(min===d2 && big_bronze)
+this.move(big_bronze.pos);
+else if(min===d1 && small_bronze)
+this.move(small_bronze.pos);
+else
+this.move({x: 59, y: 40});
+if(this.now()>1)
+    speak(this,opp);
+
+if(this.now()>0.5 && !this.getCooldown('terrify'))
     this.terrify();
 
 
+
+
+
+        
+    
+    
