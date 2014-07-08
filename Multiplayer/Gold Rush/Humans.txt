@@ -1,20 +1,40 @@
-var coins = this.getItems();
-var opp = this.getNearestEnemy();
-var gem,gold,silver,big_bronze,small_bronze;
-var d6=9000,d5=9000,d4=9000,d3=9000,d2=9000,d1=9000;
 
+
+var coins = this.getItems();
+var px = this.pos.x,py = this.pos.y;
+var opp = this.getNearestEnemy();
+var ex = opp.pos.x,ey = opp.pos.y;
+var gem,gold,silver,big_bronze,small_bronze;
+var d6=0,d5=0,d4=0,d3=0,d2=0,d1=0;
+var debug=1;
+
+function nextValuableCoin(target,dl){
+        
+    var best =0;
+    var next = null;
+    for(var i=0;i<coins.length;i++){
+        var l = target.distance(coins[i]) + dl;
+        var value = 100*coins[i].bountyGold/l;
+        if(coins[i]===target)
+            value =0;
+        if(value>best){
+            next = coins[i];
+            best=value;
+        }
+    }
+        return {coin: next,score: best,dist: l};
+}
 
 //Function to find nearest coin with specific bounty 
-function nearestCoin(bounty,player,opponent){
+function nearestCoin(bounty,player){
     var near =9000;
-    var ex = opponent.pos.x,ey = opponent.pos.y;
-    
     var coin;
     for(var i=0; i<coins.length; i++){
-        var dist = player.distance(coins[i]);
-        var snatch = Math.sqrt((ex-coins[i].pos.x)*(ex-coins[i].pos.x) +
-        (ey-coins[i].pos.y)*(ey-coins[i].pos.y));
-        if(dist<near && coins[i].bountyGold===bounty && snatch>dist){
+        var curr = coins[i];
+        var dist = player.distance(curr);
+        var cx = curr.pos.x,cy=curr.pos.y;
+        var snatch = Math.sqrt((ex-cx)*(ex-cx)+(ey-cy)*(ey-cy));
+        if(dist<near && coins[i].bountyGold===bounty &&(snatch>=dist || snatch>30)){
             coin = coins[i];
             near = dist;
         }
@@ -31,8 +51,6 @@ function speak(player,opp){
                    "Arrrghh !! I have to catch up","Hey you! Shoo !! Shoo Away !!",
                    "Well played man :)"];
     var msg = ["Hey look a bronze coin","Look over there","You wanna fight like a                  real man ?","Hey,you know there is a diamond in the forest"];
-    
-    
     if(myGold>=150 && myGold>opGold)
         player.say(special[0]);
     else if(opGold>=150 && myGold<opGold)
@@ -45,70 +63,89 @@ function speak(player,opp){
         var random = Math.round(Math.random()*100)%4;
         player.say(msg[random]);
     }
-    
 }
 
 if(coins.length){
-gem = nearestCoin(5,this,opp);
-if(gem)
-d5 = (this.distance(gem)-5)/5;
+var next,i;
+// Gems
+gem = nearestCoin(5,this);
+if(gem){
+    d5 = 500/(this.distance(gem)-5);
+    next = nextValuableCoin(gem,this.distance(gem)-5);
+    for(i=1; i<coins.length; i++){
+        d5+=next.score;
+        next = nextValuableCoin(next.coin,next.dist);
+    }   
+}
 
-gold = nearestCoin(4,this,opp);
-if(gold)
-d4 = (this.distance(gold)-5)/4;
+// Gold Coin
+gold = nearestCoin(4,this);
+if(gold){
+    d4 = 400/(this.distance(gold)-5);
+    next = nextValuableCoin(gold,this.distance(gold)-5);
+    for(i=1; i<coins.length; i++){
+        d4+=next.score;
+        next = nextValuableCoin(next.coin,next.dist);
+    }   
+}
 
-silver = nearestCoin(3,this,opp);
-if(silver)
-d3 = (this.distance(silver)-5)/3;
+// Silver Coin
+silver = nearestCoin(3,this);
+if(silver){
+    d3 = 300/(this.distance(silver)-5);
+    next = nextValuableCoin(silver,this.distance(silver)-5);
+    for(i=1; i<coins.length; i++){
+        d3+=next.score;
+        next = nextValuableCoin(next.coin,next.dist);
+    }    
+}
 
-big_bronze = nearestCoin(2,this,opp);
-if(big_bronze)
-d2 = (this.distance(big_bronze)-5)/2;
+// Big bronze
+big_bronze = nearestCoin(2,this);
+if(big_bronze){
+    d2 = 200/(this.distance(big_bronze)-5);
+    next = nextValuableCoin(big_bronze,this.distance(big_bronze)-5);
+    for(i=1; i<coins.length; i++){
+        d2+=next.score;
+        next = nextValuableCoin(next.coin,next.dist);
+    }   
+}
 
-small_bronze = nearestCoin(1,this,opp);
-if(small_bronze)
-d1 = (this.distance(small_bronze)-5)/1;
+// Small Bronze
+small_bronze = nearestCoin(1,this);
+if(small_bronze){
+d1 = 100/(this.distance(small_bronze)-5);
+    next = nextValuableCoin(small_bronze,this.distance(small_bronze)-5);
+    for(i=1; i<coins.length; i++){
+        d1+=next.score;
+        next = nextValuableCoin(next.coin,next.dist);
+    }   
+}
+
 
 }
 else 
-    d6=0;
+    d6=9000;
     
-if(this.gold===149){
-    d5*5;d4*4;d3*3;d2*2;
-}
-else if(this.gold===148){
-    d5*5/2;d4*2;d3*3/2;
-}
-else if(this.gold===147){
-    d5*5/3;d4*4/3;
-}
-else if(this.gold===146){
-    d5*5/4;
-}
-var min = Math.min(d6,d5,d4,d3,d2,d1);
+var max = Math.max(d6,d5,d4,d3,d2,d1);
 
-if(min===d5 && gem)
+if(max===d5 && gem)
 this.move(gem.pos);
-else if(min===d4 && gold)
+else if(max===d4 && gold)
 this.move(gold.pos);
-else if(min===d3 && silver)
+else if(max===d3 && silver)
 this.move(silver.pos);
-else if(min===d2 && big_bronze)
+else if(max===d2 && big_bronze)
 this.move(big_bronze.pos);
-else if(min===d1 && small_bronze)
+else if(max===d1 && small_bronze)
 this.move(small_bronze.pos);
 else
 this.move({x: 59, y: 40});
-if(this.now()>1)
-    speak(this,opp);
 
-if(this.now()>0.5 && !this.getCooldown('terrify'))
+if(this.now()>1 && !debug)
+   speak(this,opp);
+
+
+if(!this.getCooldown('terrify') && this.now()>15  && this.distance({x: 60, y: 40})<30 )
     this.terrify();
-
-
-
-
-
-        
-    
     
