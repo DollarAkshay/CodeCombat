@@ -1,0 +1,72 @@
+# This code is shared across all your Throwers.
+# You can use self.buildIndex to have Throwers do different things.
+# Throwers are vulnerable but deadly ranged units.
+
+
+        
+
+enemies = self.getEnemies()
+enemy
+dist = 1000
+nearest = self.getNearestEnemy()
+
+
+def dist2(enemy,target):
+    ex = enemy.pos.x
+    ey = enemy.pos.y
+    tx = target.pos.x;
+    ty = target.pos.y;
+    return Math.sqrt((ex-tx)*(ex-tx) + (ey-ty)*(ey-ty));
+
+def doge(self,target):
+    px = self.pos.x;
+    py = self.pos.y;
+    if target.type=='burl' and target.type=='soldier' and self.distance(target)<10:
+        v  = Vector(px-target.pos.x, py-target.pos.y)
+        v = Vector.multiply(Vector.normalize(v),5)
+        self.move(px+vx,py+vy)
+        
+
+for i in range(len(enemies)):
+    l = dist2(enemies[i],self)
+    if l<dist and enemies[i].type!='burl':
+        enemy=enemies[i]
+        dist=l
+        
+        
+
+items = self.getItems()
+
+if enemy and enemy.type != 'burl':
+    self.attack(enemy)
+else:
+    self.move({'x': 10, 'y': 10})
+    
+if self.buildIndex ==0:
+    dist = 1000
+    coin = None;
+    if items:
+        for i in range(len(items)):
+            l  = self.distance(items[i])
+            if items[i].pos.x > 66 and l<dist:
+                coin=items[i]
+                self.move(coin.pos)
+                dist=l
+    if coin and enemy and dist2(enemy,coin)<dist:
+            self.attack(enemy)
+        
+elif self.buildIndex ==1:
+    dist = 1000
+    coin = None;
+    if items:
+        for i in range(len(items)):
+            l  = self.distance(items[i])
+            if items[i].pos.x <14 and l<dist:
+                coin=items[i]
+                self.move(coin.pos)
+                dist=l
+    if coin and enemy and dist2(enemy,coin)<dist:
+            self.attack(enemy)
+            
+if(nearest):
+    doge(self,nearest)
