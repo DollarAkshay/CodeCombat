@@ -30,14 +30,25 @@ if (this.buildables[type].goldCost <= this.gold) {
 // Click on a minion to see its API.
 
 var minions = this.getFriends();
+
 var enemy_range = this.getByType('thrower');
 var enemy_foot = this.getByType('munchkin');
+
+var hero_fang = this.getByType('fangrider');
+var hero_sham = this.getByType('shaman');
+var hero_braw = this.getByType('brawler');
 
 for (var i = 0; i < minions.length; i++) {
     var minion = minions[i];
     if (this.commandableTypes.indexOf(minion.type) == -1)
         continue;
-    if(minion.type == 'soldier' && enemy_range.length>0)
+    if(minion.type == 'soldier' && hero_fang.length>0)
+        this.command(minion, 'attack', minion.getNearest(hero_fang));
+    else if(minion.type == 'soldier' && enemy_range.length>0)
+        this.command(minion, 'attack', minion.getNearest(enemy_range));
+    else if(hero_fang.length>0)
+        this.command(minion, 'attack', minion.getNearest(hero_fang));
+    else if(enemy_range.length>0)
         this.command(minion, 'attack', minion.getNearest(enemy_range));
     else
         this.command(minion, 'attack', minion.getNearestEnemy());
