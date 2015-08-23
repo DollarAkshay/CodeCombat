@@ -1,0 +1,51 @@
+// Dreek is an ogre munchkin riding a wyvern, and he's got spears. Skills:
+// this.flap() creates a gust of wind that deflects missiles within 30m.
+// this.devour() bites a target for 50 damage, taking its life if it dies.
+// this.hatch() spawns three baby munchkins for every devoured creature.
+// this.impale() throws a spear piercing everything in its path for 35 damage.
+
+var i,base,friends,enemies,weak_enemies;
+
+// Finding Enemy Base
+if (typeof this.enemy_base === 'undefined'){
+    base = this.getByType('commander');
+    for(i=0;i<base.length;i++){
+        if(base[i].team != this.team){
+            this.enemy_base=base[i];
+            break;
+        }
+    }
+}
+
+//Finding My base
+if (typeof this.my_base === 'undefined'){
+    base = this.getByType('commander');
+    for(i=0;i<base.length;i++){
+        if(base[i].team === this.team){
+            this.my_base=base[i];
+            break;
+        }
+    }
+}
+
+friends = this.getFriends();
+enemies = this.getEnemies();
+
+// Finding all the enemy units that have health below 50 so that it can be devoured
+for(i=0;i<enemies.length;i++){
+    if(enemies[i].health<=50){
+        weak_enemies.push(enemies[i]);
+    }
+}
+
+
+if (enemies.length === 0) return;  // Chill if all enemies are dead.
+var enemy = this.getNearest(enemies);
+var friend = this.getNearest(friends);
+
+
+if(this.now()>2.5 && this.getCooldown("impale")===0){
+        this.impale({x: 6, y: 33});
+}
+if(
+
